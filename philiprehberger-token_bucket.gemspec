@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Token bucket rate limiter with configurable capacity and refill rate'
   spec.description = 'Thread-safe token bucket rate limiter with configurable capacity and refill rate, ' \
-                       'supporting blocking and non-blocking token acquisition.'
+                     'supporting blocking and non-blocking token acquisition.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-token_bucket'
   spec.license = 'MIT'
 

@@ -37,7 +37,7 @@ module Philiprehberger
               @tokens -= n
               return
             end
-            wait = wait_time(n)
+            wait = compute_wait_time(n)
           end
           sleep(wait)
         end
@@ -76,14 +76,18 @@ module Philiprehberger
       def wait_time(n = 1)
         @mutex.synchronize do
           refill
-          deficit = n - @tokens
-          return 0.0 if deficit <= 0
-
-          deficit / @refill_rate
+          compute_wait_time(n)
         end
       end
 
       private
+
+      def compute_wait_time(n)
+        deficit = n - @tokens
+        return 0.0 if deficit <= 0
+
+        deficit / @refill_rate
+      end
 
       def refill
         current = now

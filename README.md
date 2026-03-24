@@ -15,7 +15,7 @@ Token bucket rate limiter with configurable capacity and refill rate
 Add to your Gemfile:
 
 ```ruby
-gem 'philiprehberger-token_bucket'
+gem "philiprehberger-token_bucket"
 ```
 
 Or install directly:

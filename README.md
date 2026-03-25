@@ -27,7 +27,7 @@ gem install philiprehberger-token_bucket
 ## Usage
 
 ```ruby
-require 'philiprehberger/token_bucket'
+require "philiprehberger/token_bucket"
 
 bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
 ```

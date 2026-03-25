@@ -62,11 +62,18 @@ bucket.wait_time(5) # => seconds until 5 tokens will be available
 
 | Method | Description |
 |--------|-------------|
-| `.new(capacity:, refill_rate:)` | Create a bucket with max tokens and tokens-per-second refill |
-| `#take(n = 1)` | Block until n tokens are available, then consume them |
-| `#try_take(n = 1)` | Consume n tokens if available, return true/false |
-| `#available` | Return the current number of available tokens |
-| `#wait_time(n = 1)` | Estimate seconds until n tokens will be available |
+| `.new(capacity:, refill_rate:)` | Create a bucket with max tokens and tokens-per-second refill. Raises `Error` if either argument is not positive |
+| `#take(n = 1)` | Block until n tokens are available, then consume them. Raises `Error` if n exceeds capacity |
+| `#try_take(n = 1)` | Consume n tokens if available, return `true`/`false` without blocking |
+| `#available` | Return the current number of available tokens as a `Float` |
+| `#wait_time(n = 1)` | Estimate seconds until n tokens will be available. Returns `0.0` if already available |
+
+### `Philiprehberger::TokenBucket::Error`
+
+| Constant / Class | Description |
+|------------------|-------------|
+| `Error` | Raised for invalid arguments (non-positive capacity/refill_rate) or when `#take` exceeds capacity |
+| `VERSION` | Current gem version string (e.g. `"0.1.5"`) |
 
 ## Development
 

@@ -92,7 +92,7 @@ module Philiprehberger
       def refill
         current = now
         elapsed = current - @last_refill
-        @tokens = [@tokens + elapsed * @refill_rate, @capacity].min
+        @tokens = [@tokens + (elapsed * @refill_rate), @capacity].min
         @last_refill = current
       end
 

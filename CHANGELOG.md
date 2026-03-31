@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-31
+
+### Added
+- Configurable refill strategy with `strategy:` parameter (`:smooth` default, `:interval` for burst refill)
+- `#drain` method to empty all tokens
+- `#full?` predicate to check if bucket is at capacity
+- GitHub issue templates, PR template, and Dependabot configuration
+- Portfolio homepage in gemspec metadata
+
+### Changed
+- README restructured with all 8 standard badges and Support section
+
 ## [0.1.5] - 2026-03-24
 
 ### Changed

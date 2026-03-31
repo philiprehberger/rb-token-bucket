@@ -206,6 +206,67 @@ RSpec.describe Philiprehberger::TokenBucket do
       end
     end
 
+    describe 'strategy: :smooth' do
+      it 'is the default and refills continuously' do
+        b = described_class.new(capacity: 10, refill_rate: 100)
+        b.try_take(5)
+        sleep(0.02)
+        tokens = b.available
+        expect(tokens).to be > 5.0
+        expect(tokens).to be <= 10.0
+      end
+    end
+
+    describe 'strategy: :interval' do
+      it 'does not refill between intervals' do
+        b = described_class.new(capacity: 10, refill_rate: 10, strategy: :interval)
+        b.try_take(5)
+        sleep(0.05)
+        expect(b.available).to be_within(0.1).of(5.0)
+      end
+
+      it 'refills to full capacity after interval elapses' do
+        b = described_class.new(capacity: 10, refill_rate: 100, strategy: :interval)
+        b.try_take(5)
+        # interval = capacity / refill_rate = 10/100 = 0.1s
+        sleep(0.15)
+        expect(b.available).to eq(10.0)
+      end
+
+      it 'raises for invalid strategy' do
+        expect { described_class.new(capacity: 10, refill_rate: 1, strategy: :bogus) }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /unknown strategy/)
+      end
+    end
+
+    describe '#drain' do
+      it 'empties all tokens' do
+        bucket.drain
+        expect(bucket.available).to be_within(0.5).of(0.0)
+      end
+
+      it 'returns self' do
+        expect(bucket.drain).to be(bucket)
+      end
+    end
+
+    describe '#full?' do
+      it 'returns true when bucket is full' do
+        expect(bucket.full?).to be true
+      end
+
+      it 'returns false after taking tokens' do
+        bucket.try_take(5)
+        expect(bucket.full?).to be false
+      end
+    end
+
+    describe '#capacity' do
+      it 'exposes the capacity as a reader' do
+        expect(bucket.capacity).to eq(10.0)
+      end
+    end
+
     describe 'refill behavior' do
       it 'refills tokens after consumption' do
         b = described_class.new(capacity: 10, refill_rate: 1000)

@@ -1,13 +1,8 @@
 # philiprehberger-token_bucket
 
-[![CI](https://github.com/philiprehberger/rb-token-bucket/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-token-bucket/actions/workflows/ci.yml)
+[![Tests](https://github.com/philiprehberger/rb-token-bucket/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-token-bucket/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-token_bucket.svg)](https://rubygems.org/gems/philiprehberger-token_bucket)
-[![GitHub release](https://img.shields.io/github/v/release/philiprehberger/rb-token-bucket)](https://github.com/philiprehberger/rb-token-bucket/releases)
 [![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rb-token-bucket)](https://github.com/philiprehberger/rb-token-bucket/commits/main)
-[![License](https://img.shields.io/github/license/philiprehberger/rb-token-bucket)](LICENSE)
-[![Bug Reports](https://img.shields.io/badge/bug%20reports-GitHub%20Issues-red)](https://github.com/philiprehberger/rb-token-bucket/issues)
-[![Feature Requests](https://img.shields.io/badge/feature%20requests-GitHub%20Issues-blue)](https://github.com/philiprehberger/rb-token-bucket/issues)
-[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Thread-safe token bucket rate limiter with configurable capacity, refill rate, and refill strategy
 
@@ -101,10 +96,21 @@ bundle exec rubocop
 
 ## Support
 
-If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+If you find this project useful:
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Philip%20Rehberger-blue?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
-[![More packages](https://img.shields.io/badge/More%20packages-philiprehberger.com-blue)](https://philiprehberger.com/open-source-packages)
+⭐ [Star the repo](https://github.com/philiprehberger/rb-token-bucket)
+
+🐛 [Report issues](https://github.com/philiprehberger/rb-token-bucket/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+
+💡 [Suggest features](https://github.com/philiprehberger/rb-token-bucket/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
+
+❤️ [Sponsor development](https://github.com/sponsors/philiprehberger)
+
+🌐 [All Open Source Projects](https://philiprehberger.com/open-source-packages)
+
+💻 [GitHub Profile](https://github.com/philiprehberger)
+
+🔗 [LinkedIn Profile](https://www.linkedin.com/in/philiprehberger)
 
 ## License
 

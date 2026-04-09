@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['Philip Rehberger']
   spec.email = ['me@philiprehberger.com']
 
-  spec.summary = 'Token bucket rate limiter with configurable capacity and refill rate'
+  spec.summary = 'Thread-safe token bucket rate limiter with configurable capacity, refill rate, and refill strategy'
   spec.description = 'Thread-safe token bucket rate limiter with configurable capacity and refill rate, ' \
                      'supporting blocking and non-blocking token acquisition.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-token_bucket'

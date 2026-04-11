@@ -10,7 +10,7 @@ module Philiprehberger
 
     # A thread-safe token bucket rate limiter
     class Bucket
-      attr_reader :capacity
+      attr_reader :capacity, :refill_rate, :strategy
 
       # @param capacity [Numeric] maximum number of tokens
       # @param refill_rate [Numeric] tokens added per second
@@ -94,6 +94,17 @@ module Philiprehberger
       def drain
         @mutex.synchronize do
           @tokens = 0.0
+        end
+        self
+      end
+
+      # Reset the bucket to full capacity
+      #
+      # @return [self]
+      def reset
+        @mutex.synchronize do
+          @tokens = @capacity
+          @last_refill = now
         end
         self
       end

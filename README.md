@@ -26,8 +26,6 @@ gem install philiprehberger-token_bucket
 
 ## Usage
 
-### Basic usage
-
 ```ruby
 require "philiprehberger/token_bucket"
 
@@ -54,7 +52,7 @@ bucket.try_take(50)
 bucket.available # => 50.0 (no partial refill until the interval elapses)
 ```
 
-### Drain and full?
+### Drain, reset, and full?
 
 ```ruby
 bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
@@ -62,6 +60,8 @@ bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
 bucket.full?  # => true
 bucket.drain  # empties all tokens, returns self
 bucket.full?  # => false
+bucket.reset  # restores to full capacity, returns self
+bucket.full?  # => true
 ```
 
 ## API
@@ -76,8 +76,11 @@ bucket.full?  # => false
 | `#available` | Return the current number of available tokens as a `Float` |
 | `#wait_time(n = 1)` | Estimate seconds until n tokens will be available. Returns `0.0` if already available |
 | `#drain` | Set available tokens to zero. Returns `self` |
+| `#reset` | Restore tokens to full capacity and reset the refill timer. Returns `self` |
 | `#full?` | Return `true` when available tokens >= capacity |
 | `#capacity` | Return the maximum token capacity as a `Float` |
+| `#refill_rate` | Return the refill rate (tokens per second) as a `Float` |
+| `#strategy` | Return the refill strategy (`:smooth` or `:interval`) |
 
 ### `Philiprehberger::TokenBucket::Error`
 

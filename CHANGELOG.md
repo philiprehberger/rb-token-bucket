@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-10
+
+### Added
+- `#reset` method to restore tokens to full capacity and reset the refill timer
+- `#refill_rate` reader to expose the configured refill rate
+- `#strategy` reader to expose the configured refill strategy
+
+### Changed
+- README Usage section restructured to follow template guide
+
 ## [0.2.2] - 2026-04-08
 
 ### Changed

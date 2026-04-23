@@ -239,6 +239,43 @@ RSpec.describe Philiprehberger::TokenBucket do
       end
     end
 
+    describe '#reset' do
+      it 'restores tokens to full capacity' do
+        bucket.try_take(8)
+        bucket.reset
+        expect(bucket.available).to eq(10.0)
+      end
+
+      it 'returns self' do
+        expect(bucket.reset).to be(bucket)
+      end
+
+      it 'resets the refill timer' do
+        bucket.try_take(10)
+        bucket.reset
+        bucket.try_take(10)
+        # After reset + immediate drain, refill should start from now
+        expect(bucket.available).to be_within(0.5).of(0.0)
+      end
+    end
+
+    describe '#refill_rate' do
+      it 'exposes the refill rate as a reader' do
+        expect(bucket.refill_rate).to eq(100.0)
+      end
+    end
+
+    describe '#strategy' do
+      it 'returns the default strategy' do
+        expect(bucket.strategy).to eq(:smooth)
+      end
+
+      it 'returns the configured strategy' do
+        b = described_class.new(capacity: 10, refill_rate: 10, strategy: :interval)
+        expect(b.strategy).to eq(:interval)
+      end
+    end
+
     describe '#drain' do
       it 'empties all tokens' do
         bucket.drain

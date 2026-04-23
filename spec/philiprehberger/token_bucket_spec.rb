@@ -318,5 +318,92 @@ RSpec.describe Philiprehberger::TokenBucket do
         expect(b.available).to eq(5.0)
       end
     end
+
+    describe '#stats' do
+      it 'returns a hash with the expected keys' do
+        expect(bucket.stats.keys).to contain_exactly(:available, :capacity, :refill_rate, :strategy)
+      end
+
+      it 'reports capacity, refill_rate, and strategy from the constructor' do
+        b = described_class.new(capacity: 20, refill_rate: 5, strategy: :interval)
+        stats = b.stats
+        expect(stats[:capacity]).to eq(20.0)
+        expect(stats[:refill_rate]).to eq(5.0)
+        expect(stats[:strategy]).to eq(:interval)
+      end
+
+      it 'reports available tokens at call time' do
+        bucket.try_take(4)
+        expect(bucket.stats[:available]).to be_within(0.1).of(6.0)
+      end
+
+      it 'returns Float values for numeric fields' do
+        stats = bucket.stats
+        expect(stats[:available]).to be_a(Float)
+        expect(stats[:capacity]).to be_a(Float)
+        expect(stats[:refill_rate]).to be_a(Float)
+      end
+
+      it 'returns a Symbol for strategy' do
+        expect(bucket.stats[:strategy]).to be_a(Symbol)
+      end
+
+      it 'returns a frozen hash' do
+        expect(bucket.stats).to be_frozen
+      end
+    end
+
+    describe '#take_wait_timeout' do
+      it 'returns true when tokens are available immediately' do
+        expect(bucket.take_wait_timeout(5, timeout: 1.0)).to be true
+      end
+
+      it 'consumes the tokens on success' do
+        bucket.take_wait_timeout(3, timeout: 1.0)
+        expect(bucket.available).to be_within(0.1).of(7.0)
+      end
+
+      it 'defaults to taking 1 token' do
+        expect(bucket.take_wait_timeout(timeout: 1.0)).to be true
+        expect(bucket.available).to be_within(0.1).of(9.0)
+      end
+
+      it 'raises when tokens cannot be replenished before timeout' do
+        b = described_class.new(capacity: 10, refill_rate: 1)
+        b.try_take(10)
+        expect { b.take_wait_timeout(5, timeout: 0.05) }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /timed out waiting for 5 tokens/)
+      end
+
+      it 'raises when n exceeds capacity' do
+        expect { bucket.take_wait_timeout(11, timeout: 1.0) }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /cannot take 11 tokens/)
+      end
+
+      it 'blocks briefly then succeeds when refill completes in time' do
+        b = described_class.new(capacity: 10, refill_rate: 100)
+        b.try_take(10)
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        expect(b.take_wait_timeout(1, timeout: 1.0)).to be true
+        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+        expect(elapsed).to be < 0.5
+        expect(elapsed).to be >= 0.005
+      end
+
+      it 'does not double-consume under concurrent calls' do
+        b = described_class.new(capacity: 5, refill_rate: 1)
+        threads = Array.new(10) do
+          Thread.new do
+            b.take_wait_timeout(1, timeout: 0.05)
+            :ok
+          rescue Philiprehberger::TokenBucket::Error
+            :timeout
+          end
+        end
+        results = threads.map(&:value)
+        expect(results.count(:ok)).to be <= 5
+        expect(b.available).to be >= 0.0
+      end
+    end
   end
 end

@@ -29,7 +29,7 @@ module Philiprehberger
         @mutex = Mutex.new
       end
 
-      # Take n tokens, blocking until they are available
+      # Take n tokens, blocking until they are available.
       #
       # @param n [Numeric] number of tokens to take
       # @return [void]
@@ -51,7 +51,7 @@ module Philiprehberger
         end
       end
 
-      # Try to take n tokens without blocking
+      # Try to take n tokens without blocking.
       #
       # @param n [Numeric] number of tokens to take
       # @return [Boolean] true if tokens were taken, false otherwise
@@ -67,7 +67,41 @@ module Philiprehberger
         end
       end
 
-      # Return the number of currently available tokens
+      # Take n tokens, blocking up to +timeout+ seconds waiting for them.
+      #
+      # Releases the internal mutex while sleeping so other threads may take
+      # or refill in the meantime. Uses a monotonic clock to track the
+      # deadline, and re-checks availability after each sleep.
+      #
+      # @param n [Numeric] number of tokens to take
+      # @param timeout [Float] maximum seconds to wait
+      # @return [Boolean] true when tokens were acquired
+      # @raise [Error] if n exceeds capacity, or if the timeout elapses before tokens are available
+      def take_wait_timeout(n = 1, timeout:)
+        raise Error, "cannot take #{n} tokens from bucket with capacity #{@capacity}" if n > @capacity
+
+        deadline = now + timeout.to_f
+
+        loop do
+          wait = nil
+          @mutex.synchronize do
+            refill
+            if @tokens >= n
+              @tokens -= n
+              return true
+            end
+            wait = compute_wait_time(n)
+          end
+
+          remaining = deadline - now
+          raise Error, "timed out waiting for #{n} tokens after #{timeout}s" if remaining <= 0
+
+          sleep_for = [wait, remaining].min
+          sleep(sleep_for) if sleep_for.positive?
+        end
+      end
+
+      # Return the number of currently available tokens.
       #
       # @return [Float] available tokens
       def available
@@ -77,7 +111,7 @@ module Philiprehberger
         end
       end
 
-      # Calculate how long to wait for n tokens to become available
+      # Calculate how long to wait for n tokens to become available.
       #
       # @param n [Numeric] number of tokens needed
       # @return [Float] seconds to wait (0.0 if tokens are already available)
@@ -88,7 +122,7 @@ module Philiprehberger
         end
       end
 
-      # Drain all tokens from the bucket
+      # Drain all tokens from the bucket.
       #
       # @return [self]
       def drain
@@ -98,7 +132,7 @@ module Philiprehberger
         self
       end
 
-      # Reset the bucket to full capacity
+      # Reset the bucket to full capacity.
       #
       # @return [self]
       def reset
@@ -109,13 +143,32 @@ module Philiprehberger
         self
       end
 
-      # Check whether the bucket is at full capacity
+      # Check whether the bucket is at full capacity.
       #
       # @return [Boolean]
       def full?
         @mutex.synchronize do
           refill
           @tokens >= @capacity
+        end
+      end
+
+      # Return a frozen snapshot of the bucket's current state.
+      #
+      # The snapshot reflects state at call time: +refill+ is invoked before
+      # reading +available+ so refill-since-last-access is accounted for.
+      #
+      # @return [Hash{Symbol => Float, Symbol}] frozen hash with keys
+      #   +:available+, +:capacity+, +:refill_rate+, +:strategy+
+      def stats
+        @mutex.synchronize do
+          refill
+          {
+            available: @tokens,
+            capacity: @capacity,
+            refill_rate: @refill_rate,
+            strategy: @strategy
+          }.freeze
         end
       end
 

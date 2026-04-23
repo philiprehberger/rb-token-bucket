@@ -64,6 +64,26 @@ bucket.reset  # restores to full capacity, returns self
 bucket.full?  # => true
 ```
 
+### Inspect state
+
+```ruby
+bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
+
+bucket.stats
+# => { available: 10.0, capacity: 10.0, refill_rate: 5.0, strategy: :smooth }
+# The returned hash is frozen.
+```
+
+### Wait with timeout
+
+```ruby
+bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
+
+# Block up to 2 seconds waiting for 5 tokens. Returns true on success,
+# raises Philiprehberger::TokenBucket::Error if the timeout elapses first.
+bucket.take_wait_timeout(5, timeout: 2.0)
+```
+
 ## API
 
 ### `Philiprehberger::TokenBucket::Bucket`
@@ -73,11 +93,13 @@ bucket.full?  # => true
 | `.new(capacity:, refill_rate:, strategy: :smooth)` | Create a bucket. `strategy` accepts `:smooth` (continuous refill) or `:interval` (burst refill). Raises `Error` if arguments are invalid |
 | `#take(n = 1)` | Block until n tokens are available, then consume them. Raises `Error` if n exceeds capacity |
 | `#try_take(n = 1)` | Consume n tokens if available, return `true`/`false` without blocking |
+| `#take_wait_timeout(n = 1, timeout:)` | Block up to `timeout` seconds waiting for n tokens. Returns `true` on success, raises `Error` on timeout or if n exceeds capacity |
 | `#available` | Return the current number of available tokens as a `Float` |
 | `#wait_time(n = 1)` | Estimate seconds until n tokens will be available. Returns `0.0` if already available |
 | `#drain` | Set available tokens to zero. Returns `self` |
 | `#reset` | Restore tokens to full capacity and reset the refill timer. Returns `self` |
 | `#full?` | Return `true` when available tokens >= capacity |
+| `#stats` | Return a frozen hash snapshot `{ available:, capacity:, refill_rate:, strategy: }` |
 | `#capacity` | Return the maximum token capacity as a `Float` |
 | `#refill_rate` | Return the refill rate (tokens per second) as a `Float` |
 | `#strategy` | Return the refill strategy (`:smooth` or `:interval`) |

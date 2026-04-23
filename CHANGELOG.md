@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-23
+
+### Added
+- `Bucket#stats` returns a frozen snapshot of `{ available, capacity, refill_rate, strategy }`.
+- `Bucket#take_wait_timeout(n, timeout:)` blocks up to `timeout` seconds waiting for tokens; raises on timeout.
+- YARD documentation on all public instance methods.
+
 ## [0.3.0] - 2026-04-10
 
 ### Added

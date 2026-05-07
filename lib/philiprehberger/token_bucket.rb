@@ -143,6 +143,20 @@ module Philiprehberger
         self
       end
 
+      # Set the bucket's token count to exactly +n+, clamped to +[0, capacity]+.
+      #
+      # Useful for tests, calibration, and state-restore scenarios where the
+      # coarse alternatives (+drain+ to 0 / +reset+ to capacity) are not enough.
+      #
+      # @param n [Numeric] target token count
+      # @return [self]
+      def refill_to(n)
+        @mutex.synchronize do
+          @tokens = n.to_f.clamp(0.0, @capacity.to_f)
+        end
+        self
+      end
+
       # Check whether the bucket is at full capacity.
       #
       # @return [Boolean]

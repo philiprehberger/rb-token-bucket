@@ -287,6 +287,40 @@ RSpec.describe Philiprehberger::TokenBucket do
       end
     end
 
+    describe '#refill_to' do
+      it 'sets the token count to the given value' do
+        bucket.refill_to(3)
+        expect(bucket.available).to be_within(0.05).of(3.0)
+      end
+
+      it 'clamps negative values to zero' do
+        bucket.refill_to(-1)
+        expect(bucket.try_take(1)).to be false
+      end
+
+      it 'clamps values above capacity to capacity' do
+        bucket.refill_to(bucket.capacity * 2)
+        expect(bucket.available).to be_within(0.05).of(bucket.capacity)
+      end
+
+      it 'returns self for chaining' do
+        expect(bucket.refill_to(0).try_take(1)).to be false
+      end
+
+      it 'works on the :smooth strategy' do
+        b = described_class.new(capacity: 10, refill_rate: 5, strategy: :smooth)
+        b.refill_to(4)
+        expect(b.try_take(4)).to be true
+      end
+
+      it 'works on the :interval strategy' do
+        b = described_class.new(capacity: 10, refill_rate: 5, strategy: :interval)
+        b.refill_to(4)
+        expect(b.try_take(4)).to be true
+        expect(b.try_take(1)).to be false
+      end
+    end
+
     describe '#full?' do
       it 'returns true when bucket is full' do
         expect(bucket.full?).to be true

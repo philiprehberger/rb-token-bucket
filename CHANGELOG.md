@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-07
+
+### Added
+- `Bucket#refill_to(n)` — sets the bucket's token count to exactly `n` (clamped to `[0, capacity]`). Useful for tests, calibration, and state restoration. Pairs with `#drain` and `#reset`.
+
 ## [0.4.0] - 2026-04-23
 
 ### Added

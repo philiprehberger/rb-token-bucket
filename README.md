@@ -57,11 +57,12 @@ bucket.available # => 50.0 (no partial refill until the interval elapses)
 ```ruby
 bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
 
-bucket.full?  # => true
-bucket.drain  # empties all tokens, returns self
-bucket.full?  # => false
-bucket.reset  # restores to full capacity, returns self
-bucket.full?  # => true
+bucket.full?       # => true
+bucket.drain       # empties all tokens, returns self
+bucket.full?       # => false
+bucket.reset       # restores to full capacity, returns self
+bucket.full?       # => true
+bucket.refill_to(3) # sets the token count to exactly 3 (clamped to [0, capacity]), returns self
 ```
 
 ### Inspect state
@@ -98,6 +99,7 @@ bucket.take_wait_timeout(5, timeout: 2.0)
 | `#wait_time(n = 1)` | Estimate seconds until n tokens will be available. Returns `0.0` if already available |
 | `#drain` | Set available tokens to zero. Returns `self` |
 | `#reset` | Restore tokens to full capacity and reset the refill timer. Returns `self` |
+| `#refill_to(n)` | Sets the bucket's token count to exactly `n` (clamped to `[0, capacity]`); returns `self` |
 | `#full?` | Return `true` when available tokens >= capacity |
 | `#stats` | Return a frozen hash snapshot `{ available:, capacity:, refill_rate:, strategy: }` |
 | `#capacity` | Return the maximum token capacity as a `Float` |

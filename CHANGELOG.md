@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-30
+
+### Added
+- `Bucket#refill_rate=(rate)` to adjust the refill rate at runtime without resetting bucket state
+- `Bucket#capacity=(cap)` to adjust the capacity at runtime, clamping current tokens down when shrinking
+
+### Fixed
+- README now includes the standard package card image after the badges
+
 ## [0.5.0] - 2026-05-07
 
 ### Added

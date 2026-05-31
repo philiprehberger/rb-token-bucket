@@ -4,6 +4,8 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-token_bucket.svg)](https://rubygems.org/gems/philiprehberger-token_bucket)
 [![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rb-token-bucket)](https://github.com/philiprehberger/rb-token-bucket/commits/main)
 
+![philiprehberger-token_bucket](https://raw.githubusercontent.com/philiprehberger/rb-token-bucket/main/package-card.webp)
+
 Thread-safe token bucket rate limiter with configurable capacity, refill rate, and refill strategy
 
 ## Requirements
@@ -85,6 +87,21 @@ bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 10, refill_rate: 5)
 bucket.take_wait_timeout(5, timeout: 2.0)
 ```
 
+### Dynamic rate adjustment
+
+```ruby
+bucket = Philiprehberger::TokenBucket::Bucket.new(capacity: 100, refill_rate: 10)
+
+# Speed up mid-flight in response to backpressure clearing — future refills
+# happen at the new rate, and currently-held tokens are preserved.
+bucket.refill_rate = 50
+
+# Shrink capacity in response to a downstream limit dropping — currently-held
+# tokens are clamped down to the new capacity. Growing capacity does NOT
+# auto-fill the bucket; tokens accrue normally via refill.
+bucket.capacity = 20
+```
+
 ## API
 
 ### `Philiprehberger::TokenBucket::Bucket`
@@ -103,7 +120,9 @@ bucket.take_wait_timeout(5, timeout: 2.0)
 | `#full?` | Return `true` when available tokens >= capacity |
 | `#stats` | Return a frozen hash snapshot `{ available:, capacity:, refill_rate:, strategy: }` |
 | `#capacity` | Return the maximum token capacity as a `Float` |
+| `#capacity=(cap)` | Adjust the capacity at runtime. Refills up to now first, then sets the new capacity and clamps `@tokens` down if it exceeded the new value. Raises `Error` for non-positive or non-numeric `cap` |
 | `#refill_rate` | Return the refill rate (tokens per second) as a `Float` |
+| `#refill_rate=(rate)` | Adjust the refill rate at runtime. Refills up to now first, then future refills use the new rate. Raises `Error` for non-positive or non-numeric `rate` |
 | `#strategy` | Return the refill strategy (`:smooth` or `:interval`) |
 
 ### `Philiprehberger::TokenBucket::Error`

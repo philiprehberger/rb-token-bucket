@@ -338,6 +338,103 @@ RSpec.describe Philiprehberger::TokenBucket do
       end
     end
 
+    describe '#refill_rate=' do
+      it 'accepts a positive Numeric and updates the reader' do
+        bucket.refill_rate = 50
+        expect(bucket.refill_rate).to eq(50.0)
+      end
+
+      it 'accepts a positive Float' do
+        bucket.refill_rate = 2.5
+        expect(bucket.refill_rate).to eq(2.5)
+      end
+
+      it 'raises for zero' do
+        expect { bucket.refill_rate = 0 }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /refill_rate must be positive/)
+      end
+
+      it 'raises for negative values' do
+        expect { bucket.refill_rate = -5 }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /refill_rate must be positive/)
+      end
+
+      it 'raises for non-numeric values' do
+        expect { bucket.refill_rate = 'fast' }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /refill_rate must be positive/)
+      end
+
+      it 'raises for nil' do
+        expect { bucket.refill_rate = nil }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /refill_rate must be positive/)
+      end
+
+      it 'causes future refills to use the new rate' do
+        b = described_class.new(capacity: 10, refill_rate: 1)
+        b.try_take(10)
+        # Bump the rate way up: ~1000 tokens/s should refill the bucket in milliseconds.
+        b.refill_rate = 1000
+        sleep(0.05)
+        expect(b.available).to be > 5.0
+      end
+
+      it 'returns the assigned value' do
+        expect(bucket.refill_rate = 25).to eq(25)
+      end
+    end
+
+    describe '#capacity=' do
+      it 'accepts a positive Numeric and updates the reader' do
+        bucket.capacity = 20
+        expect(bucket.capacity).to eq(20.0)
+      end
+
+      it 'accepts a positive Float' do
+        bucket.capacity = 12.5
+        expect(bucket.capacity).to eq(12.5)
+      end
+
+      it 'raises for zero' do
+        expect { bucket.capacity = 0 }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /capacity must be positive/)
+      end
+
+      it 'raises for negative values' do
+        expect { bucket.capacity = -1 }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /capacity must be positive/)
+      end
+
+      it 'raises for non-numeric values' do
+        expect { bucket.capacity = 'big' }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /capacity must be positive/)
+      end
+
+      it 'raises for nil' do
+        expect { bucket.capacity = nil }
+          .to raise_error(Philiprehberger::TokenBucket::Error, /capacity must be positive/)
+      end
+
+      it 'clamps current tokens down when shrinking below current token count' do
+        # Bucket starts full at 10. Shrink to 3 -> tokens clamp to 3.
+        bucket.capacity = 3
+        expect(bucket.available).to be_within(0.1).of(3.0)
+      end
+
+      it 'does NOT auto-fill when growing capacity' do
+        # Drain to a known low value, then grow capacity. Tokens should stay low.
+        b = described_class.new(capacity: 10, refill_rate: 1)
+        b.try_take(8) # ~2 tokens remain
+        b.capacity = 100
+        # Use a tight tolerance — refill at 1 tok/s won't accrue much in the
+        # microseconds between try_take and the assertion.
+        expect(b.available).to be_within(0.5).of(2.0)
+      end
+
+      it 'returns the assigned value' do
+        expect(bucket.capacity = 42).to eq(42)
+      end
+    end
+
     describe 'refill behavior' do
       it 'refills tokens after consumption' do
         b = described_class.new(capacity: 10, refill_rate: 1000)

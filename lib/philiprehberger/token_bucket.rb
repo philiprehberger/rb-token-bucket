@@ -29,6 +29,50 @@ module Philiprehberger
         @mutex = Mutex.new
       end
 
+      # Adjust the refill rate at runtime.
+      #
+      # Performs a refill up to the current moment using the *previous* rate
+      # before swapping in the new value, so token accounting stays consistent
+      # across the change. Also recomputes the internal +@refill_interval+
+      # since it is derived from both capacity and refill_rate.
+      #
+      # @param rate [Numeric] new tokens-per-second rate (must be positive)
+      # @return [Numeric] the assigned rate
+      # @raise [Error] if +rate+ is not a positive Numeric
+      def refill_rate=(rate)
+        raise Error, 'refill_rate must be positive' unless rate.is_a?(Numeric) && rate.positive?
+
+        @mutex.synchronize do
+          refill
+          @refill_rate = rate.to_f
+          @refill_interval = @capacity / @refill_rate
+        end
+      end
+
+      # Adjust the capacity at runtime.
+      #
+      # Performs a refill up to the current moment using the previous capacity
+      # before swapping in the new value, so token accounting stays consistent
+      # across the change. If the new capacity is below the currently-held
+      # token count, +@tokens+ is clamped down to the new capacity. Increasing
+      # capacity does NOT auto-fill the bucket; existing tokens are preserved.
+      # Recomputes the internal +@refill_interval+ since it is derived from
+      # both capacity and refill_rate.
+      #
+      # @param cap [Numeric] new maximum token capacity (must be positive)
+      # @return [Numeric] the assigned capacity
+      # @raise [Error] if +cap+ is not a positive Numeric
+      def capacity=(cap)
+        raise Error, 'capacity must be positive' unless cap.is_a?(Numeric) && cap.positive?
+
+        @mutex.synchronize do
+          refill
+          @capacity = cap.to_f
+          @tokens = @capacity if @tokens > @capacity
+          @refill_interval = @capacity / @refill_rate
+        end
+      end
+
       # Take n tokens, blocking until they are available.
       #
       # @param n [Numeric] number of tokens to take
